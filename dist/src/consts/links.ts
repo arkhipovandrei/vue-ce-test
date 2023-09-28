@@ -1,8 +1,0 @@
-export const TELEGRAM_LINK_ENG = 'https://t.me/mybidEng'
-export const TELEGRAM_LINK_RU = 'https://t.me/mybidRu'
-export const SKYPE_LINK = 'https://join.skype.com/invite/MQ7eqDnCnbFg'
-export const FACEBOOK_LINK = 'https://www.facebook.com/MyBidAdvNetwork'
-export const INSTAGRAM_LINK = 'https://www.instagram.com/mybid_adnetwork/'
-export const LINKEDIN_LINK = 'https://www.linkedin.com/company/mybid-ad-network'
-export const VK_LINK = 'https://vk.com/mybid'
-export const SUPPORT_EMAIL_LINK = 'mailto:support@mybid.io'

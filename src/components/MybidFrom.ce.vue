@@ -1,85 +1,12 @@
-<template>
-  <div class="container">
-    <img
-        alt="button close"
-        :src="CloseIcon"
-        @click="emit('close')"
-        class="btn-close"
-    />
-    <form
-        class="form"
-        :onSubmit="submitForm"
-        novalidate
-    >
-      <template
-          v-for="(formInput, formKey, index) of formInputs"
-          :key="index"
-      >
-        <template v-if="formInput.type === 'select'">
-          <SelectInput
-              :id="formKey"
-              v-model="form[formKey]"
-              :options="formInput?.options"
-              :label="t(formKey)"
-              :placeholder="formInput?.placeholder"
-              :errors="errors.fieldErrors?.[formKey]"
-              @input="onInput(formKey, false)"
-          />
-        </template>
-        <template v-else>
-          <TextInput
-              :id="formKey"
-              v-model="form[formKey]"
-              :label="t(formKey)"
-              :placeholder="formInput?.placeholder"
-              :errors="errors.fieldErrors?.[formKey]"
-              @input="onInput(formKey)"
-          />
-        </template>
-      </template>
-      <div class="flex mb-6">
-        <input
-            v-model="agree"
-            class="mr-2"
-            type="checkbox"
-        >
-        <div class="self-center">
-          {{ t('modal.agree') }}
-          <a href="/terms_en.html" target="_blank">
-            {{ t('modal.terms') }}
-          </a>
-        </div>
-      </div>
-      <GRecaptcha v-model:has-error="isCaptchaInvalid" @load="onRecaptchaLoad"/>
-      <div>
-        <p
-            v-for="(err, errIdx) in errors.formErrors"
-            :key="errIdx"
-            style="color: red"
-        >
-          {{ err }}
-        </p>
-      </div>
-      <button
-          :disabled="formIsLoading || !agree"
-          :class="[isSpanish(lang) ? 'es-font' : 'en-ru-font', 'button']"
-          type="submit"
-      >
-        {{ !formIsLoading ? t('signUp') : `${t('loading')}...` }}
-      </button>
-    </form>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { useModal } from 'vue-final-modal'
+import {useModal} from 'vue-final-modal'
 import ModalSuccess from '@/components/signup/ModalSuccess.vue'
 import TextInput from '@/components/ui/TextInput.vue'
 import SelectInput from '@/components/ui/SelectInput.vue'
 import GRecaptcha from '@/components/signup/GRecaptcha.vue'
-import { COUNTRIES } from '@/consts/countries'
-import { computed, reactive, ref, toRef, defineEmits, defineProps } from 'vue'
-import { z } from 'zod'
+import {COUNTRIES} from '@/consts/countries'
+import {computed, reactive, ref, toRef, defineEmits, defineProps} from 'vue'
+import {z} from 'zod'
 import {Locales} from "@/i18n/ui";
 import {useTranslations} from "@/i18n/utils";
 import {TFormatsInput} from "@/components/signup/type";
@@ -114,22 +41,22 @@ const formSchema = z
       name: z
           .string()
           // .nonempty({ message: t('errors.nonEmpty') })
-          .min(3, { message: t('errors.minChars') })
-          .max(30, { message: t('errors.maxChars') })
-          .regex(/^[\w\dА-Яа-я\s]+$/, { message: t('errors.nameValidChars') }),
+          .min(3, {message: t('errors.minChars')})
+          .max(30, {message: t('errors.maxChars')})
+          .regex(/^[\w\dА-Яа-я\s]+$/, {message: t('errors.nameValidChars')}),
       email: z
           .string()
           // .nonempty({ message: t('errors.nonEmpty') })
-          .email({ message: t('errors.invalidEmail') }),
-      messenger: z.string().nonempty({ message: t('errors.nonEmpty') }),
+          .email({message: t('errors.invalidEmail')}),
+      messenger: z.string().nonempty({message: t('errors.nonEmpty')}),
       userName: z
           .string()
           // .nonempty({ message: t('errors.nonEmpty') })
-          .min(3, { message: t('errors.minChars') })
+          .min(3, {message: t('errors.minChars')})
           .regex(/^[A-Za-z-_#$%^&@\.\d:]+$/, {
             message: t('errors.userNameValidChars')
           }),
-      countryOfResidence: z.string().nonempty({ message: t('errors.nonEmpty') }),
+      countryOfResidence: z.string().nonempty({message: t('errors.nonEmpty')}),
       promoCode: z.string()
     })
     .strict();
@@ -155,8 +82,8 @@ const formInputs: TFormatsInput = {
   messenger: {
     type: 'select',
     options: [
-      { value: 'telegram', text: 'Telegram' },
-      { value: 'skype', text: 'Skype' }
+      {value: 'telegram', text: 'Telegram'},
+      {value: 'skype', text: 'Skype'}
     ],
     placeholder: t('msgrPlaceholder')
   },
@@ -166,7 +93,7 @@ const formInputs: TFormatsInput = {
   },
   countryOfResidence: {
     type: 'select',
-    options: COUNTRIES.map((c) => ({ text: c, value: c })).sort(),
+    options: COUNTRIES.map((c) => ({text: c, value: c})).sort(),
     placeholder: t('countryPlaceholder')
   },
   promoCode: {
@@ -215,23 +142,23 @@ const onInput = (key: keyof FormSchema, checkDirty: boolean = true) => {
 }
 const formIsLoading = ref(false)
 const isConfirmed = ref(false)
-const redirectHref = computed(() => `${import.meta.env.PUBLIC_DASHBOARD_URL}?login=${form.name}`)
+const redirectHref = computed(() => `${import.meta.env.VITE_PUBLIC_RECAPTCHA}?login=${form.name}`)
 
 const submitForm = async (e: Event) => {
   e.preventDefault()
   clearFormErrors()
   try {
     const result = formSchema.safeParse(form);
-    if (!result.success) {
-      errors.value = result.error.flatten()
-      return
-    }
+
     const recaptchaResponse = grecaptcha.getResponse(grecaptchaId.value)
     isCaptchaInvalid.value = !recaptchaResponse
-    //const result = formSchema.safeParse(form)
-
 
     if (isCaptchaInvalid.value) {
+      return
+    }
+
+    if (!result.success) {
+      errors.value = result.error.flatten()
       return
     }
 
@@ -263,7 +190,7 @@ const submitForm = async (e: Event) => {
       yandex_id: ''
     }
 
-    const { access, errors: resErrors } = await fetch('https://api.mybid.io/api/v1/sign-up', {
+    const {access, errors: resErrors} = await fetch('https://api.mybid.io/api/v1/sign-up', {
       body: JSON.stringify(payload),
       method: 'POST',
       headers: {
@@ -277,7 +204,7 @@ const submitForm = async (e: Event) => {
 
     emit('close')
 
-    const { open: openSuccessModal } = useModal({
+    const {open: openSuccessModal} = useModal({
       component: ModalSuccess,
       attrs: {
         isConfirmed: isConfirmed.value,
@@ -313,9 +240,85 @@ const submitForm = async (e: Event) => {
 }
 </script>
 
+<template>
+  <div class="container">
+    <form
+        class="form"
+        :onSubmit="submitForm"
+        novalidate
+    >
+      <template
+          v-for="(formInput, formKey, index) of formInputs"
+          :key="index"
+      >
+        <template v-if="formInput.type === 'select'">
+          <SelectInput
+              :id="formKey"
+              v-model="form[formKey]"
+              :options="formInput?.options"
+              :label="t(formKey)"
+              :placeholder="formInput?.placeholder"
+              :errors="errors.fieldErrors?.[formKey]"
+              @input="onInput(formKey, false)"
+          />
+        </template>
+        <template v-else>
+          <TextInput
+              :id="formKey"
+              v-model="form[formKey]"
+              :label="t(formKey)"
+              :placeholder="formInput?.placeholder"
+              :errors="errors.fieldErrors?.[formKey]"
+              @input="onInput(formKey)"
+          />
+        </template>
+      </template>
+      <div class="flex mb-6">
+        <input
+            v-model="agree"
+            class="mr-2"
+            type="checkbox"
+        >
+        <div class="self-center">
+          {{ t('modal.agree') }}
+          <a href="/terms_en.html" target="_blank">
+            {{ t('modal.terms') }}
+          </a>
+        </div>
+      </div>
+      <div id="grecaptcha-container">
+        <Teleport to="#mybid-from">
+          <GRecaptcha v-model:has-error="isCaptchaInvalid" @load="onRecaptchaLoad"/>
+        </Teleport>
+      </div>
+      <div style="min-height: 40px">
+        <p
+            v-for="(err, errIdx) in errors.formErrors"
+            :key="errIdx"
+            style="color: red; "
+        >
+          {{ err }}
+        </p>
+      </div>
+      <button
+          :disabled="formIsLoading || !agree"
+          :class="[isSpanish(lang) ? 'es-font' : 'en-ru-font', 'button']"
+          type="submit"
+      >
+        {{ !formIsLoading ? t('signUp') : `${t('loading')}...` }}
+      </button>
+    </form>
+  </div>
+</template>
+
+
 <style scoped lang="scss">
 
-:deep{
+#grecaptcha-container {
+  height: 80px;
+}
+
+:deep {
   .input-block {
     display: flex;
     flex-direction: column;
@@ -329,7 +332,7 @@ const submitForm = async (e: Event) => {
   .input-label {
     margin-bottom: 8px;
     color: #FFF;
-    font-family: 'Ruberoid','rimmasansboldruberoidsemibold', sans-serif;
+    font-family: 'Ruberoid', 'rimmasansboldruberoidsemibold', sans-serif;
     font-size: 16px;
     font-style: normal;
     font-weight: 600;
@@ -347,7 +350,7 @@ const submitForm = async (e: Event) => {
     outline: none;
     border: none;
     padding-left: 24px;
-    font-family: 'Ruberoid','rimmasansboldruberoidsemibold', sans-serif;
+    font-family: 'Ruberoid', 'rimmasansboldruberoidsemibold', sans-serif;
 
     @media screen and (max-width: 420px) {
       height: 37px;
@@ -363,7 +366,7 @@ const submitForm = async (e: Event) => {
     outline: solid red;
   }
 
-  input select{
+  input select {
     box-sizing: border-box;
   }
 
@@ -377,10 +380,12 @@ const submitForm = async (e: Event) => {
     }
 
   }
+
   .captcha {
     align-self: center;
     width: fit-content;
     min-height: 80px;
+
     &_invalid {
       outline: solid 1px red;
     }
@@ -405,6 +410,7 @@ const submitForm = async (e: Event) => {
     padding: 25px 20px 20px 20px;
   }
 }
+
 .form {
   display: flex;
   flex-direction: column;
@@ -430,16 +436,18 @@ const submitForm = async (e: Event) => {
   &:hover, &:disabled {
     opacity: 0.9;
   }
+
   &:disabled {
     cursor: not-allowed;
   }
+
   @media screen and (max-width: 420px) {
     margin-top: 12px;
     font-size: 18px;
   }
 }
 
-.btn-close{
+.btn-close {
   width: 24px;
   height: 24px;
   position: absolute;
@@ -447,18 +455,21 @@ const submitForm = async (e: Event) => {
   right: 1.25rem;
   cursor: pointer;
 }
-.flex{
+
+.flex {
   display: flex;
 }
-.mb-6{
+
+.mb-6 {
   margin-bottom: 1.5rem;
 }
+
 a:not(.unset) {
   color: #FFFFFF;
   text-decoration: none;
   background-repeat: no-repeat;
   background-size: 100% 1.5px;
   background-position: 0 100%;
-  background-image: linear-gradient(to right,rgb(15, 23, 42), rgb(255, 88, 248));
+  background-image: linear-gradient(to right, rgb(15, 23, 42), rgb(255, 88, 248));
 }
 </style>

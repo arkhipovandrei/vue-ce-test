@@ -1,9 +1,9 @@
 <template>
   <div
-    ref="captchaFieldRef"
-    class="captcha"
-    :class="{ captcha_invalid: hasError }"
-    :data-callback="callbackName"
+      :id="captchaId"
+      class="captcha"
+      :class="{ captcha_invalid: hasError }"
+      :data-callback="callbackName"
   />
 </template>
 
@@ -19,7 +19,8 @@ const emit = defineEmits<{
   load: [id: number]
   'update:hasError': [v: boolean]
 }>()
-const captchaFieldRef = ref()
+
+const captchaId = ref(`captcha_field`)
 const gCaptchaScriptSrc = 'https://www.google.com/recaptcha/api.js?render=explicit'
 const gCaptchaSelector = document.head.querySelector(`script[src="${gCaptchaScriptSrc}"]`)
 
@@ -41,8 +42,8 @@ onMounted(() => {
     if (grecaptcha) {
       clearInterval(checkInterval)
       grecaptcha.ready(function () {
-        const id: number = grecaptcha.render(unref(captchaFieldRef), {
-          sitekey: "6LfYxQgkAAAAAIfTsChNOcbtnVWn0SX4H-G7wge6"
+        const id: number = grecaptcha.render(captchaId.value, {
+          sitekey: import.meta.env.VITE_PUBLIC_RECAPTCHA
         // theme: 'dark'
         })
         emit('load', id)
