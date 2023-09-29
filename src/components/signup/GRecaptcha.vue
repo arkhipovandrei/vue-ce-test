@@ -1,7 +1,7 @@
 <template>
   <div
       :id="captchaId"
-      class="captcha"
+      class="captcha captcha_field"
       :class="{ captcha_invalid: hasError }"
       :data-callback="callbackName"
   />
@@ -11,16 +11,18 @@
 /**
  * TODO types https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/grecaptcha/index.d.ts
  */
-import {ref, onMounted, unref} from 'vue'
-defineProps<{
+import {ref, onMounted, unref, computed} from 'vue'
+const props = defineProps<{
   hasError: boolean
+  id:string;
 }>()
 const emit = defineEmits<{
   load: [id: number]
   'update:hasError': [v: boolean]
 }>()
 
-const captchaId = ref(`captcha_field`)
+
+const captchaId = computed(() => `captcha_${props.id}`)
 const gCaptchaScriptSrc = 'https://www.google.com/recaptcha/api.js?render=explicit'
 const gCaptchaSelector = document.head.querySelector(`script[src="${gCaptchaScriptSrc}"]`)
 

@@ -6,16 +6,32 @@
     <title>Vite + Vue</title>
 </head>
 <body>
-<div id="mybid-from" style="position:relative;">
-    <mybid-from lang="en"/>
-</div>
+
+<!--<div style="display: flex; gap: 12px">-->
+    <div id="mybid-from-wrap" style="position:relative;">
+        <mybid-from to="mybid-from-wrap" lang="en"/>
+    </div>
+
+<!--    <div id="mybid-from" style="position:relative;">
+        <mybid-from to="mybid-from" lang="ru"/>
+    </div>-->
+<!--</div>-->
+
 <script type="module" src="/src/main.js"></script>
 <style>
-    #captcha_field {
+
+    .captcha_field {
         position: absolute;
         top: 725px;
         left: 40px;
     }
+    @media screen and (max-width: 420px) {
+        .captcha_field{
+            top: 625px;
+            left: 20px;
+        }
+    }
+
 </style>
 </body>
 </html>

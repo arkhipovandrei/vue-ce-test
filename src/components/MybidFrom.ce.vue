@@ -1,24 +1,25 @@
 <script setup lang="ts">
-import {useModal} from 'vue-final-modal'
-import ModalSuccess from '@/components/signup/ModalSuccess.vue'
+import {createVfm, setActiveVfm, useModal} from 'vue-final-modal'
+import ModalSuccess from "@/components/signup/ModalSuccess.vue";
 import TextInput from '@/components/ui/TextInput.vue'
 import SelectInput from '@/components/ui/SelectInput.vue'
 import GRecaptcha from '@/components/signup/GRecaptcha.vue'
 import {COUNTRIES} from '@/consts/countries'
-import {computed, reactive, ref, toRef, defineEmits, defineProps} from 'vue'
+import {computed, reactive, ref, toRef, defineEmits, defineProps, getCurrentInstance, provide} from 'vue'
 import {z} from 'zod'
 import {Locales} from "@/i18n/ui";
 import {useTranslations} from "@/i18n/utils";
 import {TFormatsInput} from "@/components/signup/type";
 import {isSpanish} from "@/consts/isSpanish";
 import 'vue-final-modal/style.css';
-import CloseIcon from '@/assets/close-menu.svg';
+import { ModalsContainer } from 'vue-final-modal'
 
 type FormSchema = z.infer<typeof formSchema>
 type FlattenedErrors = z.inferFlattenedErrors<typeof formSchema>
 
 const props = withDefaults(defineProps<{
   lang: Locales
+  to: string
 }>(), {
   lang: 'en'
 });
@@ -26,15 +27,31 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (event: 'close'): void
 }>();
-const lang = toRef(props, 'lang')
-const t = useTranslations(lang.value)
+
+provide('vfm',createVfm() )
+
+const lang = toRef(props, 'lang');
+const t = useTranslations(lang.value);
 
 const agree = ref(false)
 const grecaptchaId = ref<number | null>(null)
 const onRecaptchaLoad = (id: number) => {
   grecaptchaId.value = id
 }
-const isCaptchaInvalid = ref(false)
+const isCaptchaInvalid = ref(false);
+const randInRange = (min = 1, max = 5) => Math.random() * (max - min) + min;
+
+const numberCaptcha = computed(() => {
+  const divider = Math.round(randInRange(1, 7));
+  const answer =  Math.round(randInRange(1, 7));
+  return {
+    multip: divider * answer,
+    divider,
+    answer
+  }
+});
+
+//const app = getCurrentInstance();
 
 const formSchema = z
     .object({
@@ -57,7 +74,10 @@ const formSchema = z
             message: t('errors.userNameValidChars')
           }),
       countryOfResidence: z.string().nonempty({message: t('errors.nonEmpty')}),
-      promoCode: z.string()
+      promoCode: z.string(),
+      divided: z.literal(numberCaptcha.value.answer.toString(), {
+        errorMap: () => ({ message: t('dividedError') }),
+      })
     })
     .strict();
 
@@ -67,7 +87,8 @@ const form = reactive<FormSchema>({
   messenger: '',
   userName: '',
   countryOfResidence: '',
-  promoCode: ''
+  promoCode: '',
+  divided: ''
 })
 
 const formInputs: TFormatsInput = {
@@ -85,7 +106,8 @@ const formInputs: TFormatsInput = {
       {value: 'telegram', text: 'Telegram'},
       {value: 'skype', text: 'Skype'}
     ],
-    placeholder: t('msgrPlaceholder')
+    placeholder: t('msgrPlaceholder'),
+
   },
   userName: {
     type: 'text',
@@ -96,9 +118,13 @@ const formInputs: TFormatsInput = {
     options: COUNTRIES.map((c) => ({text: c, value: c})).sort(),
     placeholder: t('countryPlaceholder')
   },
-  promoCode: {
+  divided: {
     type: 'text',
-    placeholder: '--------'
+    label: t('divided', {
+      multip: numberCaptcha.value.multip,
+      divider: numberCaptcha.value.divider,
+    }),
+    placeholder: t('dividedPlaceholder'),
   }
 }
 const errors = ref<FlattenedErrors>({
@@ -147,6 +173,16 @@ const redirectHref = computed(() => `${import.meta.env.VITE_PUBLIC_RECAPTCHA}?lo
 const submitForm = async (e: Event) => {
   e.preventDefault()
   clearFormErrors()
+
+  const {open: openSuccessModal} = useModal({
+    component: ModalSuccess,
+    attrs: {
+      isConfirmed: isConfirmed.value,
+      redirectHref: redirectHref.value
+    }
+  });
+
+
   try {
     const result = formSchema.safeParse(form);
 
@@ -172,7 +208,7 @@ const submitForm = async (e: Event) => {
       messenger: form.messenger,
       name: form.name,
       nick_name: form.userName,
-      promo_code: form.promoCode,
+      promo_code: '',//form.promoCode,
       user_name: form.userName,
       activity: 'Affiliate',
       browser_language: browserLanguage,
@@ -202,7 +238,7 @@ const submitForm = async (e: Event) => {
       throw new Error(resErrors)
     }
 
-    emit('close')
+    emit('close');
 
     const {open: openSuccessModal} = useModal({
       component: ModalSuccess,
@@ -242,6 +278,7 @@ const submitForm = async (e: Event) => {
 
 <template>
   <div class="container">
+    <ModalsContainer/>
     <form
         class="form"
         :onSubmit="submitForm"
@@ -256,7 +293,7 @@ const submitForm = async (e: Event) => {
               :id="formKey"
               v-model="form[formKey]"
               :options="formInput?.options"
-              :label="t(formKey)"
+              :label="formInput.label ?? t(formKey)"
               :placeholder="formInput?.placeholder"
               :errors="errors.fieldErrors?.[formKey]"
               @input="onInput(formKey, false)"
@@ -266,7 +303,7 @@ const submitForm = async (e: Event) => {
           <TextInput
               :id="formKey"
               v-model="form[formKey]"
-              :label="t(formKey)"
+              :label="formInput.label ?? t(formKey)"
               :placeholder="formInput?.placeholder"
               :errors="errors.fieldErrors?.[formKey]"
               @input="onInput(formKey)"
@@ -281,17 +318,17 @@ const submitForm = async (e: Event) => {
         >
         <div class="self-center">
           {{ t('modal.agree') }}
-          <a href="/terms_en.html" target="_blank">
+          <a href="https://joinmybid.com/eng/termsconditions" target="_blank">
             {{ t('modal.terms') }}
           </a>
         </div>
       </div>
       <div id="grecaptcha-container">
-        <Teleport to="#mybid-from">
-          <GRecaptcha v-model:has-error="isCaptchaInvalid" @load="onRecaptchaLoad"/>
+        <Teleport :to="`#${to}`">
+          <GRecaptcha :id="to" v-model:has-error="isCaptchaInvalid" @load="onRecaptchaLoad"/>
         </Teleport>
       </div>
-      <div style="min-height: 40px">
+      <div >
         <p
             v-for="(err, errIdx) in errors.formErrors"
             :key="errIdx"

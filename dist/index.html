@@ -4,23 +4,36 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Vite + Vue</title>
-  <script type="module" crossorigin src="/assets/index-e17241af.js"></script>
-  <link rel="stylesheet" href="/assets/index-d1833178.css">
+  <script type="module" crossorigin src="/assets/index-22b61130.js"></script>
+  <link rel="stylesheet" href="/assets/index-99f441e9.css">
 </head>
 <body>
-<div id="mybid-from" style="position:relative;">
-    <mybid-from lang="en"/>
-</div>
+
+<!--<div style="display: flex; gap: 12px">-->
+    <div id="mybid-from-wrap" style="position:relative;">
+        <mybid-from to="mybid-from-wrap" lang="en"/>
+    </div>
+
+<!--    <div id="mybid-from" style="position:relative;">
+        <mybid-from to="mybid-from" lang="ru"/>
+    </div>-->
+<!--</div>-->
+
 
 <style>
-    #mybid-from{
-        position: relative;
-    }
-    #captcha_field {
+
+    .captcha_field {
         position: absolute;
         top: 725px;
         left: 40px;
     }
+    @media screen and (max-width: 420px) {
+        .captcha_field{
+            top: 625px;
+            left: 20px;
+        }
+    }
+
 </style>
 </body>
 </html>
