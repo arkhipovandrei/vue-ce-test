@@ -12,7 +12,7 @@ import {useTranslations} from "@/i18n/utils";
 import {TFormatsInput} from "@/components/signup/type";
 import {isSpanish} from "@/consts/isSpanish";
 import 'vue-final-modal/style.css';
-import { ModalsContainer } from 'vue-final-modal'
+import {ModalsContainer} from 'vue-final-modal'
 
 type FormSchema = z.infer<typeof formSchema>
 type FlattenedErrors = z.inferFlattenedErrors<typeof formSchema>
@@ -28,7 +28,7 @@ const emit = defineEmits<{
   (event: 'close'): void
 }>();
 
-provide('vfm',createVfm() )
+provide('vfm', createVfm())
 
 const lang = toRef(props, 'lang');
 const t = useTranslations(lang.value);
@@ -43,15 +43,13 @@ const randInRange = (min = 1, max = 5) => Math.random() * (max - min) + min;
 
 const numberCaptcha = computed(() => {
   const divider = Math.round(randInRange(1, 7));
-  const answer =  Math.round(randInRange(1, 7));
+  const answer = Math.round(randInRange(1, 7));
   return {
     multip: divider * answer,
     divider,
     answer
   }
 });
-
-//const app = getCurrentInstance();
 
 const formSchema = z
     .object({
@@ -76,7 +74,7 @@ const formSchema = z
       countryOfResidence: z.string().nonempty({message: t('errors.nonEmpty')}),
       promoCode: z.string(),
       divided: z.literal(numberCaptcha.value.answer.toString(), {
-        errorMap: () => ({ message: t('dividedError') }),
+        errorMap: () => ({message: t('dividedError')}),
       })
     })
     .strict();
@@ -267,246 +265,82 @@ const submitForm = async (e: Event) => {
     } else if (errorText.startsWith('This login already exists')) {
       setFormErrors([t('errors.loginAlreadyExist')])
     } else {
-      console.error('Something went wrong: ', errorText)
       setFormErrors([t('errors.smthWentWrong')])
     }
   } finally {
     formIsLoading.value = false
   }
 }
+
 </script>
-
 <template>
-  <div class="container">
-    <ModalsContainer/>
-    <form
-        class="form"
-        :onSubmit="submitForm"
-        novalidate
-    >
-      <template
-          v-for="(formInput, formKey, index) of formInputs"
-          :key="index"
+  <Teleport :to="`#${to}`">
+    <div class="my-bid-form">
+      <ModalsContainer/>
+      <form
+          class="form"
+          :onSubmit="submitForm"
+          novalidate
       >
-        <template v-if="formInput.type === 'select'">
-          <SelectInput
-              :id="formKey"
-              v-model="form[formKey]"
-              :options="formInput?.options"
-              :label="formInput.label ?? t(formKey)"
-              :placeholder="formInput?.placeholder"
-              :errors="errors.fieldErrors?.[formKey]"
-              @input="onInput(formKey, false)"
-          />
-        </template>
-        <template v-else>
-          <TextInput
-              :id="formKey"
-              v-model="form[formKey]"
-              :label="formInput.label ?? t(formKey)"
-              :placeholder="formInput?.placeholder"
-              :errors="errors.fieldErrors?.[formKey]"
-              @input="onInput(formKey)"
-          />
-        </template>
-      </template>
-      <div class="flex mb-6">
-        <input
-            v-model="agree"
-            class="mr-2"
-            type="checkbox"
+        <template
+            v-for="(formInput, formKey, index) of formInputs"
+            :key="index"
         >
-        <div class="self-center">
-          {{ t('modal.agree') }}
-          <a href="https://joinmybid.com/eng/termsconditions" target="_blank">
-            {{ t('modal.terms') }}
-          </a>
+          <template v-if="formInput.type === 'select'">
+            <SelectInput
+                :id="formKey"
+                v-model="form[formKey]"
+                :options="formInput?.options"
+                :label="formInput.label ?? t(formKey)"
+                :placeholder="formInput?.placeholder"
+                :errors="errors.fieldErrors?.[formKey]"
+                @input="onInput(formKey, false)"
+            />
+          </template>
+          <template v-else>
+            <TextInput
+                :id="formKey"
+                v-model="form[formKey]"
+                :label="formInput.label ?? t(formKey)"
+                :placeholder="formInput?.placeholder"
+                :errors="errors.fieldErrors?.[formKey]"
+                @input="onInput(formKey)"
+            />
+          </template>
+        </template>
+        <div class="flex mb-6">
+          <input
+              v-model="agree"
+              class="mr-2"
+              type="checkbox"
+          >
+          <div class="self-center">
+            {{ t('modal.agree') }}
+            <a href="https://joinmybid.com/eng/termsconditions" target="_blank">
+              {{ t('modal.terms') }}
+            </a>
+          </div>
         </div>
-      </div>
-      <div id="grecaptcha-container">
-        <Teleport :to="`#${to}`">
+        <div id="grecaptcha-container">
           <GRecaptcha :id="to" v-model:has-error="isCaptchaInvalid" @load="onRecaptchaLoad"/>
-        </Teleport>
-      </div>
-      <div >
-        <p
-            v-for="(err, errIdx) in errors.formErrors"
-            :key="errIdx"
-            style="color: red; "
+        </div>
+        <div>
+          <p
+              v-for="(err, errIdx) in errors.formErrors"
+              :key="errIdx"
+              style="color: red; "
+          >
+            {{ err }}
+          </p>
+        </div>
+        <button
+            :disabled="formIsLoading || !agree"
+            :class="[isSpanish(lang) ? 'es-font' : 'en-ru-font', 'button']"
+            type="submit"
         >
-          {{ err }}
-        </p>
-      </div>
-      <button
-          :disabled="formIsLoading || !agree"
-          :class="[isSpanish(lang) ? 'es-font' : 'en-ru-font', 'button']"
-          type="submit"
-      >
-        {{ !formIsLoading ? t('signUp') : `${t('loading')}...` }}
-      </button>
-    </form>
-  </div>
+          {{ !formIsLoading ? t('signUp') : `${t('loading')}...` }}
+        </button>
+      </form>
+    </div>
+  </Teleport>
 </template>
-
-
-<style scoped lang="scss">
-
-#grecaptcha-container {
-  height: 80px;
-}
-
-:deep {
-  .input-block {
-    display: flex;
-    flex-direction: column;
-    min-height: 110px;
-
-    @media screen and (max-width: 420px) {
-      min-height: 95px;
-    }
-  }
-
-  .input-label {
-    margin-bottom: 8px;
-    color: #FFF;
-    font-family: 'Ruberoid', 'rimmasansboldruberoidsemibold', sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: normal;
-
-    @media screen and (max-width: 420px) {
-      margin-bottom: 4px;
-    }
-  }
-
-  .input {
-    height: 50px;
-    background: #FFF;
-    color: #000;
-    outline: none;
-    border: none;
-    padding-left: 24px;
-    font-family: 'Ruberoid', 'rimmasansboldruberoidsemibold', sans-serif;
-
-    @media screen and (max-width: 420px) {
-      height: 37px;
-    }
-
-    &::selection {
-      background: theme('colors.text.primary');
-      color: white
-    }
-  }
-
-  .input-invalid {
-    outline: solid red;
-  }
-
-  input select {
-    box-sizing: border-box;
-  }
-
-  .input__error {
-    color: red;
-    font-size: 14px;
-    padding-top: 4px;
-
-    @media screen and (max-width: 420px) {
-      font-size: 11px;
-    }
-
-  }
-
-  .captcha {
-    align-self: center;
-    width: fit-content;
-    min-height: 80px;
-
-    &_invalid {
-      outline: solid 1px red;
-    }
-  }
-}
-
-.container {
-  position: relative;
-  max-width: 575px;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 20px 40px;
-  background: #151516;
-  color: #fff;
-  font-family: 'Ruberoid', 'rimmasansboldruberoidsemibold', Arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
-
-  @media screen and (max-width: 500px) {
-    padding: 25px 20px 20px 20px;
-  }
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-}
-
-.button {
-  margin-top: 20px;
-  background-color: rgba(0, 255, 209, 1);
-  color: #000;
-  box-sizing: border-box;
-  font-size: 24px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
-  padding: 16px;
-  text-align: center;
-  width: 100%;
-  text-transform: uppercase;
-  outline: none;
-  border: none;
-  cursor: pointer;
-
-  &:hover, &:disabled {
-    opacity: 0.9;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-  }
-
-  @media screen and (max-width: 420px) {
-    margin-top: 12px;
-    font-size: 18px;
-  }
-}
-
-.btn-close {
-  width: 24px;
-  height: 24px;
-  position: absolute;
-  top: .75rem;
-  right: 1.25rem;
-  cursor: pointer;
-}
-
-.flex {
-  display: flex;
-}
-
-.mb-6 {
-  margin-bottom: 1.5rem;
-}
-
-a:not(.unset) {
-  color: #FFFFFF;
-  text-decoration: none;
-  background-repeat: no-repeat;
-  background-size: 100% 1.5px;
-  background-position: 0 100%;
-  background-image: linear-gradient(to right, rgb(15, 23, 42), rgb(255, 88, 248));
-}
-</style>

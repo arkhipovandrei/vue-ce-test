@@ -126,3 +126,179 @@ input select{
 .fade-leave-to {
   opacity: 0;
 }
+
+.my-bid-form {
+  position: relative;
+  max-width: 575px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px 40px;
+  background: #151516;
+  color: #fff;
+  font-family: 'Ruberoid', 'rimmasansboldruberoidsemibold', Arial, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+
+  @media screen and (max-width: 500px) {
+    padding: 25px 20px 20px 20px;
+  }
+
+  #grecaptcha-container {
+    height: 80px;
+  }
+
+  .input-block {
+    display: flex;
+    flex-direction: column;
+    min-height: 110px;
+
+    @media screen and (max-width: 420px) {
+      min-height: 95px;
+    }
+  }
+
+  .input-label {
+    margin-bottom: 8px;
+    color: #FFF;
+    font-family: 'Ruberoid', 'rimmasansboldruberoidsemibold', sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+
+    @media screen and (max-width: 420px) {
+      margin-bottom: 4px;
+    }
+  }
+
+  .input {
+    height: 50px;
+    background: #FFF;
+    color: #000;
+    outline: none;
+    border: none;
+    padding-left: 24px;
+    font-family: 'Ruberoid', 'rimmasansboldruberoidsemibold', sans-serif;
+
+    @media screen and (max-width: 420px) {
+      height: 37px;
+    }
+
+    &::selection {
+      background: #6f06ff;
+      color: white
+    }
+  }
+
+  .input-invalid {
+    outline: solid red;
+  }
+
+  input select {
+    box-sizing: border-box;
+  }
+
+  .input__error {
+    color: red;
+    font-size: 14px;
+    padding-top: 4px;
+
+    @media screen and (max-width: 420px) {
+      font-size: 11px;
+    }
+
+  }
+
+  .captcha {
+    align-self: center;
+    width: fit-content;
+    min-height: 80px;
+
+    &_invalid {
+      outline: solid 1px red;
+    }
+  }
+}
+
+.container {
+  position: relative;
+  max-width: 575px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px 40px;
+  background: #151516;
+  color: #fff;
+  font-family: 'Ruberoid', 'rimmasansboldruberoidsemibold', Arial, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+
+  @media screen and (max-width: 500px) {
+    padding: 25px 20px 20px 20px;
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.button {
+  margin-top: 20px;
+  background-color: rgba(0, 255, 209, 1);
+  color: #000;
+  box-sizing: border-box;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  padding: 16px;
+  text-align: center;
+  width: 100%;
+  text-transform: uppercase;
+  outline: none;
+  border: none;
+  cursor: pointer;
+
+  &:hover, &:disabled {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  @media screen and (max-width: 420px) {
+    margin-top: 12px;
+    font-size: 18px;
+  }
+}
+
+.btn-close {
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  top: .75rem;
+  right: 1.25rem;
+  cursor: pointer;
+}
+
+.flex {
+  display: flex;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+a:not(.unset) {
+  color: #FFFFFF;
+  text-decoration: none;
+  background-repeat: no-repeat;
+  background-size: 100% 1.5px;
+  background-position: 0 100%;
+  background-image: linear-gradient(to right, rgb(15, 23, 42), rgb(255, 88, 248));
+}
