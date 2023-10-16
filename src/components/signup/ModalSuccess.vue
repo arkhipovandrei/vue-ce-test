@@ -7,15 +7,15 @@
       <div>
         <SuccessIcon class="modal__icon" />
         <h4 class="modal__heading">
-          Dear Partner!
+          {{t('modalSuccess.hearer')}}
         </h4>
         <div>
           <div v-if="isConfirmed">
             <p class="modal__paragraph">
-              You have successfully registered on MyBid.
+              {{t('modalSuccess.content')}}
             </p>
             <p class="modal__paragraph">
-              In a few seconds you will be redirected to your account.
+              {{t('modalSuccess.timer')}}
             </p>
             <p class="modal__paragraph">
               {{ redirectTimer }}
@@ -23,20 +23,22 @@
             <a
               ref="redirectButton"
               :href="redirectHref"
-            >go now</a>
+            >
+              {{t('modalSuccess.goNow')}}
+            </a>
           </div>
 
           <div v-if="!isConfirmed">
             <p class="modal__paragraph">
-              You have successfully registered on MyBid.
+              {{t('modalSuccess.successfully')}}
             </p>
             <p class="modal__paragraph">
-              In order to access your account, please verify your e-mail.
+              {{t('modalSuccess.successfullySub')}}
             </p>
           </div>
         </div>
         <p class="modal__paragraph modal__welcome">
-          Welcome to Mybid!
+          {{t('modalSuccess.welcome')}}
         </p>
       </div>
     </div>
@@ -46,15 +48,20 @@
 <script setup lang="ts">
 import { VueFinalModal } from 'vue-final-modal'
 import SuccessIcon from '@/components/ui/SuccessIcon.vue'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, toRef } from 'vue'
+import {useTranslations} from "@/i18n/utils";
+import {Locales} from "@/i18n/ui";
 
 const props = defineProps<{
   isConfirmed: boolean
   redirectHref: string
+  lang: Locales
 }>()
 
 const redirectTimer = ref(5)
 const redirectButton = ref<HTMLAnchorElement | null>(null)
+const lang = toRef(props, 'lang');
+const t = useTranslations(lang.value);
 
 onMounted(() => {
   if (props.isConfirmed) {

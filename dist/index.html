@@ -4,8 +4,8 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Vite + Vue</title>
-  <script type="module" crossorigin src="/assets/index-333852a5.js"></script>
-  <link rel="stylesheet" href="/assets/index-99f441e9.css">
+  <script type="module" crossorigin src="/assets/index-17fe80e9.js"></script>
+  <link rel="stylesheet" href="/assets/index-0794c662.css">
 </head>
 <body>
 
@@ -19,21 +19,13 @@
     </div>-->
 <!--</div>-->
 
-
-<style>
-
-    .captcha_field {
-        position: absolute;
-        top: 725px;
-        left: 40px;
-    }
-    @media screen and (max-width: 420px) {
-        .captcha_field{
-            top: 625px;
-            left: 20px;
-        }
-    }
-
-</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mybid.support/myb-vue-ce@0.0.9/assets/index-0794c662.css">
+<div id="mybid-from1" style="position:relative;"></div>
+<script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/@mybid.support/myb-vue-ce@0.0.9/assets/index-17fe80e9.js/+esm" ></script>
+<script>
+    var formId = 'mybid-from1';
+    var form = document.getElementById(formId);
+    form.innerHTML = `<mybid-from lang="ru" to="${formId}"/>`
+</script>
 </body>
 </html>

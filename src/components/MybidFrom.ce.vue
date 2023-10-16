@@ -176,7 +176,8 @@ const submitForm = async (e: Event) => {
     component: ModalSuccess,
     attrs: {
       isConfirmed: isConfirmed.value,
-      redirectHref: redirectHref.value
+      redirectHref: redirectHref.value,
+      lang
     }
   });
 

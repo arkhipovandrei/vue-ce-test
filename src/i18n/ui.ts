@@ -163,6 +163,14 @@ export const ui = {
     'errors.loginAlreadyExist':
       'This login already exists. Check your mail, our manager will contact you',
     'errors.smthWentWrong': 'Something went wrong, please try again later',
+
+    "modalSuccess.hearer": "Dear Partner!",
+    "modalSuccess.content": "You have successfully registered on MyBid.",
+    "modalSuccess.timer": "In a few seconds you will be redirected to your account.",
+    "modalSuccess.welcome": "Welcome to Mybid!",
+    "modalSuccess.successfully": "You have successfully registered on MyBid.",
+    "modalSuccess.successfullySub": "In order to access your account, please verify your e-mail.",
+    "modalSuccess.goNow": "go now",
   },
   es: {
     'heading.slogan':
@@ -465,6 +473,14 @@ export const ui = {
     'errors.loginAlreadyExist': 'Пользователь с этим логином уже зарегистрирован',
     'errors.smthWentWrong':
       'Что-то пошло не так, попробуйте зарегистрироваться позже',
+
+    "modalSuccess.hearer": "Поздравляем!",
+    "modalSuccess.content": "Вы успешно зарегистрировались в MyBid",
+    "modalSuccess.timer": "Через несколько секунд вы будете перенаправлены в свой аккаунт.",
+    "modalSuccess.welcome": "Добро пожаловать в MyBid!",
+    "modalSuccess.successfully": "Вы успешно зарегистрировались в MyBid",
+    "modalSuccess.successfullySub": "Для доступа к аккаунту, подтвердите ваш e-mail.",
+    "modalSuccess.goNow": "Перейти сейчас",
   },
 } as const
 
