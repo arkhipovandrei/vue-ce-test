@@ -71,6 +71,8 @@ const formSchema = z
           .regex(/^[A-Za-z-_#$%^&@\.\d:]+$/, {
             message: t('errors.userNameValidChars')
           }),
+      //(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?
+
       countryOfResidence: z.string().nonempty({message: t('errors.nonEmpty')}),
       promoCode: z.string(),
       divided: z.literal(numberCaptcha.value.answer.toString(), {
@@ -90,7 +92,7 @@ const form = reactive<FormSchema>({
 });
 
 const userNameByMessenger  = computed( () => {
-  console.log(form.messenger)
+
   if(form.messenger === 'whatsapp') {
     return t('phoneNumber')
   }
@@ -99,7 +101,9 @@ const userNameByMessenger  = computed( () => {
   }
   return t('userName')
 });
-
+const usernamePlaceholder = computed(() => {
+  return form.messenger == 'facebook'? 'Profile link' : 'live: ... | @username'
+})
 const formInputs: TFormatsInput = {
   name: {
     type: 'text',
@@ -122,7 +126,7 @@ const formInputs: TFormatsInput = {
   },
   userName: {
     type: 'text',
-    placeholder: 'live: ... | @username',
+    placeholder: usernamePlaceholder,
     customLabel:userNameByMessenger,
   },
   countryOfResidence: {
@@ -313,7 +317,7 @@ const getLabel = ({formInput, formKey}) => {
                 :id="formKey"
                 v-model="form[formKey]"
                 :label="getLabel({formInput, formKey})"
-                :placeholder="formInput?.placeholder"
+                :placeholder="formInput.placeholder"
                 :errors="errors.fieldErrors?.[formKey]"
                 @input="onInput(formKey)"
             />

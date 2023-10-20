@@ -9,7 +9,7 @@
       :name="id"
       class="input"
       :class="{ 'input-invalid': hasError }"
-      :placeholder="placeholder"
+      :placeholder="unref(placeholder)"
     >
     <Transition name="fade">
       <InputErrors
@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import {computed, unref} from 'vue'
 import InputErrors from '@/components/ui/InputErrors.vue'
 
 interface Props {
