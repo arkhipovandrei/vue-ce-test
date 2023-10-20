@@ -156,8 +156,7 @@ export const ui = {
     'errors.maxChars': 'Up to 30 characters',
     'errors.minChars': 'From 3 characters',
     'errors.nameValidChars': 'Allowed - word characters, digits, underline (_)',
-    'errors.userNameValidChars':
-      'Allowed - word characters, digits and allowed characters: -_#$%^&@.',
+    'errors.userNameValidChars': 'You entered an incorrect value',
     'errors.emailAlreadyExist':
       'This email already exists. Check your mail, our manager will contact you',
     'errors.nameAlreadyExist':
@@ -470,7 +469,7 @@ export const ui = {
     'errors.nameValidChars':
       'Допустимые символы - буквы, цифры, нижнее подчеркивание (_)',
     'errors.userNameValidChars':
-      'Допустимые символы - латинскиe буквы, цифры и символы: -_#$%^&@.',
+      'Вы ввели неверное значение',
     'errors.emailAlreadyExist':
       'Введеный email уже зарегистрирован. Проверьте вашу почту',
     'errors.nameAlreadyExist': 'Пользователь с этим именем уже зарегистрирован',

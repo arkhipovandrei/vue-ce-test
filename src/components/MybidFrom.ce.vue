@@ -51,7 +51,24 @@ const numberCaptcha = computed(() => {
   }
 });
 
-const formSchema = z
+
+
+const form = reactive<FormSchema>({
+  name: '',
+  email: '',
+  messenger: '',
+  userName: '',
+  countryOfResidence: '',
+  promoCode: '',
+  divided: ''
+});
+
+const userNameRule = computed(() => {
+  if(form.messenger === 'facebook') return /(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?/
+  return /^[A-Za-z-_#$%^&@\.\d:]+$/
+});
+
+const formSchema = computed(() => z
     .object({
       name: z
           .string()
@@ -66,30 +83,17 @@ const formSchema = z
       messenger: z.string().nonempty({message: t('errors.nonEmpty')}),
       userName: z
           .string()
-          // .nonempty({ message: t('errors.nonEmpty') })
           .min(3, {message: t('errors.minChars')})
-          .regex(/^[A-Za-z-_#$%^&@\.\d:]+$/, {
+          .regex(userNameRule.value, {
             message: t('errors.userNameValidChars')
           }),
-      //(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?
-
       countryOfResidence: z.string().nonempty({message: t('errors.nonEmpty')}),
       promoCode: z.string(),
       divided: z.literal(numberCaptcha.value.answer.toString(), {
         errorMap: () => ({message: t('dividedError')}),
       })
     })
-    .strict();
-
-const form = reactive<FormSchema>({
-  name: '',
-  email: '',
-  messenger: '',
-  userName: '',
-  countryOfResidence: '',
-  promoCode: '',
-  divided: ''
-});
+    .strict());
 
 const userNameByMessenger  = computed( () => {
 
@@ -161,7 +165,7 @@ const clearFormErrors = () => {
 const dirtyFormEntries = Object.entries(form).map(([key, v]) => ([key, !!v]))
 const isDirty = Object.fromEntries(dirtyFormEntries)
 const inputValidate = (key: keyof FormSchema) => {
-  const result = formSchema.shape[key].safeParse(form[key])
+  const result = formSchema.value.shape[key].safeParse(form[key])
   if (!result.success) {
     errors.value.fieldErrors[key] = result.error.flatten().formErrors
     return
@@ -191,7 +195,7 @@ const submitForm = async (e: Event) => {
   clearFormErrors()
 
   try {
-    const result = formSchema.safeParse(form);
+    const result = formSchema.value.safeParse(form);
 
     const recaptchaResponse = grecaptcha.getResponse(grecaptchaId.value)
     isCaptchaInvalid.value = !recaptchaResponse
