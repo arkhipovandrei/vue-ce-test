@@ -87,7 +87,18 @@ const form = reactive<FormSchema>({
   countryOfResidence: '',
   promoCode: '',
   divided: ''
-})
+});
+
+const userNameByMessenger  = computed( () => {
+  console.log(form.messenger)
+  if(form.messenger === 'whatsapp') {
+    return t('phoneNumber')
+  }
+  if(form.messenger === 'facebook') {
+    return t('profileLink')
+  }
+  return t('userName')
+});
 
 const formInputs: TFormatsInput = {
   name: {
@@ -102,14 +113,17 @@ const formInputs: TFormatsInput = {
     type: 'select',
     options: [
       {value: 'telegram', text: 'Telegram'},
-      {value: 'skype', text: 'Skype'}
+      {value: 'skype', text: 'Skype'},
+      {value: 'whatsapp', text: 'WhatsApp'},
+      {value: 'facebook', text: 'Facebook'},
     ],
     placeholder: t('msgrPlaceholder'),
 
   },
   userName: {
     type: 'text',
-    placeholder: 'live: ... | @username'
+    placeholder: 'live: ... | @username',
+    customLabel:userNameByMessenger,
   },
   countryOfResidence: {
     type: 'select',
@@ -172,16 +186,6 @@ const submitForm = async (e: Event) => {
   e.preventDefault()
   clearFormErrors()
 
-  const {open: openSuccessModal} = useModal({
-    component: ModalSuccess,
-    attrs: {
-      isConfirmed: isConfirmed.value,
-      redirectHref: redirectHref.value,
-      lang
-    }
-  });
-
-
   try {
     const result = formSchema.safeParse(form);
 
@@ -243,7 +247,8 @@ const submitForm = async (e: Event) => {
       component: ModalSuccess,
       attrs: {
         isConfirmed: isConfirmed.value,
-        redirectHref: redirectHref.value
+        redirectHref: redirectHref.value,
+        lang
       }
     })
 
@@ -273,6 +278,11 @@ const submitForm = async (e: Event) => {
   }
 }
 
+const getLabel = ({formInput, formKey}) => {
+  if(formInput.customLabel) return formInput.customLabel.value;
+  return formInput.label ?? t(formKey)
+}
+
 </script>
 <template>
   <Teleport :to="`#${to}`">
@@ -292,7 +302,7 @@ const submitForm = async (e: Event) => {
                 :id="formKey"
                 v-model="form[formKey]"
                 :options="formInput?.options"
-                :label="formInput.label ?? t(formKey)"
+                :label="getLabel({formInput, formKey})"
                 :placeholder="formInput?.placeholder"
                 :errors="errors.fieldErrors?.[formKey]"
                 @input="onInput(formKey, false)"
@@ -302,7 +312,7 @@ const submitForm = async (e: Event) => {
             <TextInput
                 :id="formKey"
                 v-model="form[formKey]"
-                :label="formInput.label ?? t(formKey)"
+                :label="getLabel({formInput, formKey})"
                 :placeholder="formInput?.placeholder"
                 :errors="errors.fieldErrors?.[formKey]"
                 @input="onInput(formKey)"

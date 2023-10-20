@@ -6,7 +6,7 @@
     <div class="modal">
       <div>
         <SuccessIcon class="modal__icon" />
-        <h4 class="modal__heading">
+        <h4 class="modal__heading" :lang="lang">
           {{t('modalSuccess.hearer')}}
         </h4>
         <div>
@@ -52,6 +52,7 @@ import { onMounted, ref, toRef } from 'vue'
 import {useTranslations} from "@/i18n/utils";
 import {Locales} from "@/i18n/ui";
 
+
 const props = defineProps<{
   isConfirmed: boolean
   redirectHref: string
@@ -60,8 +61,7 @@ const props = defineProps<{
 
 const redirectTimer = ref(5)
 const redirectButton = ref<HTMLAnchorElement | null>(null)
-const lang = toRef(props, 'lang');
-const t = useTranslations(lang.value);
+const t = useTranslations(props.lang ?? 'en');
 
 onMounted(() => {
   if (props.isConfirmed) {

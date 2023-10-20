@@ -1,6 +1,6 @@
 {
   "name": "@mybid.support/myb-vue-ce",
-  "version": "0.0.9",
+  "version": "0.1.12",
   "type": "module",
   "private": false,
   "scripts": {
