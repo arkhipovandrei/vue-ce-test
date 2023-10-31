@@ -16,7 +16,7 @@
         disabled
         selected
       >
-        {{ placeholder }}
+        {{ unref(placeholder) }}
       </option>
       <option
         v-for="(option, index) in options"
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, unref } from 'vue'
 import InputErrors from '@/components/ui/InputErrors.vue'
 interface Option {
   text: string

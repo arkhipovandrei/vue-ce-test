@@ -1185,6 +1185,26 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@maskito/core@^1.8.1":
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/@maskito/core/-/core-1.8.1.tgz#67bfb88862c6946acc2315c33b626e56b185bdff"
+  integrity sha512-h9+Z91WASHQ6z6kDP7uIHyMUPxNwA1mOIPsFxdg2MHq1RASFUNKHj66uU5xuR0OJu17qcCCzUu7ixZ43QQ/HYg==
+
+"@maskito/kit@^1.8.1":
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/@maskito/kit/-/kit-1.8.1.tgz#28427e26880b7c5f996820130d84c02731b44ba7"
+  integrity sha512-eevH2iyqRjxw8kzt7gmLETrlkPTj4Mq1mbIOOD2VQ+O33ocNFl1a87s02mRQGk6UmSJBmHLT/2EaVfUEswBmWA==
+
+"@maskito/phone@^1.8.1":
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/@maskito/phone/-/phone-1.8.1.tgz#4c702b4f04d188ea338631653602d3318bc8d04b"
+  integrity sha512-m6Lv/j5EPHkTIMJxwMYLW+YIl7474o8I68OQ0IuWsOn150MuYhUOUkAV+MvxG1gqgq6EL0UwbColiL7Ywg12ow==
+
+"@maskito/vue@^1.8.1":
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/@maskito/vue/-/vue-1.8.1.tgz#b00dd965fe13562553a06d0a038d6c85337f91c0"
+  integrity sha512-DAA1MC3lRsm1yHcBpaEcTch9AVM9GwFUGz2+pQ3Sdh/u+WgjkKWOKGUzALMAh9xr0cT3DFQT82ys9EDTcsgrIw==
+
 "@types/web-bluetooth@^0.0.16":
   version "0.0.16"
   resolved "https://registry.yarnpkg.com/@types/web-bluetooth/-/web-bluetooth-0.0.16.tgz#1d12873a8e49567371f2a75fe3e7f7edca6662d8"
@@ -1766,6 +1786,11 @@ kind-of@^6.0.2:
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
+
+libphonenumber-js@^1.10.48:
+  version "1.10.48"
+  resolved "https://registry.yarnpkg.com/libphonenumber-js/-/libphonenumber-js-1.10.48.tgz#3c426b4aa21dfe3210bfbda47d208acffa3631bf"
+  integrity sha512-Vvcgt4+o8+puIBJZLdMshPYx9nRN3/kTT7HPtOyfYrSQuN9PGBF1KUv0g07fjNzt4E4GuA7FnsLb+WeAMzyRQg==
 
 locate-path@^3.0.0:
   version "3.0.0"

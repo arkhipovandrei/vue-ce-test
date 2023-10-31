@@ -476,7 +476,6 @@ export const ui = {
     'errors.loginAlreadyExist': 'Пользователь с этим логином уже зарегистрирован',
     'errors.smthWentWrong':
       'Что-то пошло не так, попробуйте зарегистрироваться позже',
-
     "modalSuccess.hearer": "Поздравляем!",
     "modalSuccess.content": "Вы успешно зарегистрировались в MyBid",
     "modalSuccess.timer": "Через несколько секунд вы будете перенаправлены в свой аккаунт.",

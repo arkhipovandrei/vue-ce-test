@@ -5,7 +5,7 @@ import TextInput from '@/components/ui/TextInput.vue'
 import SelectInput from '@/components/ui/SelectInput.vue'
 import GRecaptcha from '@/components/signup/GRecaptcha.vue'
 import {COUNTRIES} from '@/consts/countries'
-import {computed, reactive, ref, toRef, defineEmits, defineProps, getCurrentInstance, provide} from 'vue'
+import {computed, reactive, ref, toRef, defineEmits, defineProps, getCurrentInstance, provide, watch} from 'vue'
 import {z} from 'zod'
 import {Locales} from "@/i18n/ui";
 import {useTranslations} from "@/i18n/utils";
@@ -13,6 +13,15 @@ import {TFormatsInput} from "@/components/signup/type";
 import {isSpanish} from "@/consts/isSpanish";
 import 'vue-final-modal/style.css';
 import {ModalsContainer} from 'vue-final-modal'
+import {maskitoPhoneOptionsGenerator} from '@maskito/phone';
+import {maskito as vMaskito} from '@maskito/vue';
+import metadata from 'libphonenumber-js/mobile/metadata';
+ 
+const maskitoOptions = maskitoPhoneOptionsGenerator({
+    metadata,
+    strict: false,
+    countryIsoCode: 'RU',
+});
 
 type FormSchema = z.infer<typeof formSchema>
 type FlattenedErrors = z.inferFlattenedErrors<typeof formSchema>
@@ -63,90 +72,121 @@ const form = reactive<FormSchema>({
   divided: ''
 });
 
+const Messenger = {
+  Facebook: "facebook",
+  WhatsApp: 'whatsapp'
+}  
+
+const userNameProps = computed(() => {
+  switch(form.messenger){
+    case Messenger.Facebook:
+      return {
+        regex: /(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?/,
+        placeholder:   t('profileLink'),
+        label: t('profileLink'),
+        type: 'text'
+      }
+    case Messenger.WhatsApp:
+      return {
+        placeholder: "+...",
+        label: t('phoneNumber'),
+        type: 'tel'
+      }
+    default: 
+      return {
+        regex:/^[A-Za-z-_#$%^&@\.\d:]+$/,
+        placeholder: "live: ... | @username" ,
+        label: t('userName'),
+        type: 'text'
+      } 
+  }
+})
+
 const userNameRule = computed(() => {
-  if(form.messenger === 'facebook') return /(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?/
-  return /^[A-Za-z-_#$%^&@\.\d:]+$/
+  const rule  = z.string();
+
+  if(form.messenger === Messenger.WhatsApp){
+      return rule
+      //.min(9, {message: t('errors.minChars').replace('3', 9)})
+      //.max(15, {message: t('errors.maxChars').replace('30', 15)})
+  }
+
+  return rule
+    .regex(userNameProps.value.regex, {
+      message: t('errors.userNameValidChars')
+    })
+    .min(3, {message: t('errors.minChars')})      
 });
 
 const formSchema = computed(() => z
-    .object({
-      name: z
-          .string()
-          // .nonempty({ message: t('errors.nonEmpty') })
-          .min(3, {message: t('errors.minChars')})
-          .max(30, {message: t('errors.maxChars')})
-          .regex(/^[\w\dА-Яа-я\s]+$/, {message: t('errors.nameValidChars')}),
-      email: z
-          .string()
-          // .nonempty({ message: t('errors.nonEmpty') })
-          .email({message: t('errors.invalidEmail')}),
-      messenger: z.string().nonempty({message: t('errors.nonEmpty')}),
-      userName: z
-          .string()
-          .min(3, {message: t('errors.minChars')})
-          .regex(userNameRule.value, {
-            message: t('errors.userNameValidChars')
-          }),
-      countryOfResidence: z.string().nonempty({message: t('errors.nonEmpty')}),
-      promoCode: z.string(),
-      divided: z.literal(numberCaptcha.value.answer.toString(), {
+  .object({ 
+    name: z
+      .string()
+    // .nonempty({ message: t('errors.nonEmpty') })
+      .min(3, {message: t('errors.minChars')})
+      .max(30, {message: t('errors.maxChars')})
+      .regex(/^[\w\dА-Яа-я\s]+$/, {message: t('errors.nameValidChars')}),
+    email: z
+      .string()
+    // .nonempty({ message: t('errors.nonEmpty') })
+      .email({message: t('errors.invalidEmail')}),
+    messenger: z.string().nonempty({message: t('errors.nonEmpty')}),
+    userName: userNameRule.value,
+    countryOfResidence: z.string().nonempty({message: t('errors.nonEmpty')}),
+    promoCode: z.string(),
+    divided: z.literal(numberCaptcha.value.answer.toString(), {
         errorMap: () => ({message: t('dividedError')}),
       })
-    })
-    .strict());
-
-const userNameByMessenger  = computed( () => {
-
-  if(form.messenger === 'whatsapp') {
-    return t('phoneNumber')
-  }
-  if(form.messenger === 'facebook') {
-    return t('profileLink')
-  }
-  return t('userName')
-});
-const usernamePlaceholder = computed(() => {
-  return form.messenger == 'facebook'? 'Profile link' : 'live: ... | @username'
-})
-const formInputs: TFormatsInput = {
-  name: {
-    type: 'text',
-    placeholder: t('namePlaceholder')
-  },
-  email: {
-    type: 'text',
-    placeholder: 'example@mail.com'
-  },
-  messenger: {
-    type: 'select',
-    options: [
-      {value: 'telegram', text: 'Telegram'},
-      {value: 'skype', text: 'Skype'},
-      {value: 'whatsapp', text: 'WhatsApp'},
-      {value: 'facebook', text: 'Facebook'},
-    ],
-    placeholder: t('msgrPlaceholder'),
-
-  },
-  userName: {
-    type: 'text',
-    placeholder: usernamePlaceholder,
-    customLabel:userNameByMessenger,
-  },
-  countryOfResidence: {
-    type: 'select',
-    options: COUNTRIES.map((c) => ({text: c, value: c})).sort(),
-    placeholder: t('countryPlaceholder')
-  },
-  divided: {
+  })
+  .strict()
+)
+ 
+const formInputs: TFormatsInput = computed(() => {
+  return {
+    name: {
+      type: 'text',
+      placeholder: t('namePlaceholder')
+    },
+    email: {
+      type: 'text',
+      placeholder: 'example@mail.com'
+    },
+    messenger: {
+      type: 'select',
+      options: [
+        {value: 'telegram', text: 'Telegram'},
+        {value: 'skype', text: 'Skype'},
+        {value: Messenger.WhatsApp, text: 'WhatsApp'},
+        {value: Messenger.Facebook, text: 'Facebook'},
+      ],
+      placeholder: t('msgrPlaceholder')
+    },
+    userName: {
+      type:  userNameProps.value.type,
+      placeholder: userNameProps.value.placeholder,
+      label: userNameProps.value.label,
+    },
+    countryOfResidence: {
+      type: 'select',
+      options: COUNTRIES.map((c) => ({text: c, value: c})).sort(),
+      placeholder: t('countryPlaceholder')
+    },
+    divided: {
     type: 'text',
     label: t('divided', {
       multip: numberCaptcha.value.multip,
       divider: numberCaptcha.value.divider,
     }),
     placeholder: t('dividedPlaceholder'),
-  }
-}
+  },
+    promoCode: {
+      type: 'text',
+      placeholder: '--------'
+    }
+  } 
+});
+
+
 const errors = ref<FlattenedErrors>({
   formErrors: [],
   fieldErrors: {}
@@ -286,10 +326,13 @@ const submitForm = async (e: Event) => {
   }
 }
 
-const getLabel = ({formInput, formKey}) => {
-  if(formInput.customLabel) return formInput.customLabel.value;
+const getLabel = ({formInput, formKey}:any) => {
   return formInput.label ?? t(formKey)
 }
+
+watch(() => form.messenger, () => {
+  form.userName = ''
+}, {immediate: true});
 
 </script>
 <template>
@@ -301,32 +344,44 @@ const getLabel = ({formInput, formKey}) => {
           :onSubmit="submitForm"
           novalidate
       >
-        <template
-            v-for="(formInput, formKey, index) of formInputs"
-            :key="index"
-        >
-          <template v-if="formInput.type === 'select'">
-            <SelectInput
-                :id="formKey"
-                v-model="form[formKey]"
-                :options="formInput?.options"
-                :label="getLabel({formInput, formKey})"
-                :placeholder="formInput?.placeholder"
-                :errors="errors.fieldErrors?.[formKey]"
-                @input="onInput(formKey, false)"
-            />
-          </template>
-          <template v-else>
-            <TextInput
-                :id="formKey"
-                v-model="form[formKey]"
-                :label="getLabel({formInput, formKey})"
-                :placeholder="formInput.placeholder"
-                :errors="errors.fieldErrors?.[formKey]"
-                @input="onInput(formKey)"
-            />
-          </template>
+      <template
+        v-for="(formInput, formKey, index) of (formInputs)"
+        :key="index"
+      >
+        <template v-if="formInput.type === 'select'">
+          <SelectInput
+            :id="formKey"
+            v-model="form[formKey]"
+            :options="formInput?.options"
+            :label="getLabel({formInput, formKey})"
+            :placeholder="formInput?.placeholder"
+            :errors="errors.fieldErrors?.[formKey]"
+            @input="onInput(formKey, false)"
+          />
         </template>
+
+        <template v-else-if="formInput.type === 'tel'">
+          <TextInput
+            :id="formKey"
+            v-model="form[formKey]"
+            :label="getLabel({formInput, formKey})"
+            :placeholder="formInput?.placeholder"
+            :errors="errors.fieldErrors?.[formKey]"
+            v-maskito="maskitoOptions"
+            @input="onInput(formKey)"
+          />
+        </template>
+        <template v-else>
+          <TextInput
+            :id="formKey"
+            v-model="form[formKey]"
+            :label="getLabel({formInput, formKey})"
+            :placeholder="formInput?.placeholder"
+            :errors="errors.fieldErrors?.[formKey]"
+            @input="onInput(formKey)"
+          />
+        </template>
+      </template>
         <div class="flex mb-6">
           <input
               v-model="agree"

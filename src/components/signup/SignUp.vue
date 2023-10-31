@@ -13,27 +13,45 @@
           v-for="(formInput, formKey, index) of formInputs"
           :key="index"
       >
+      <template
+        v-for="(formInput, formKey, index) of unref(formInputs)"
+        :key="index"
+      >
         <template v-if="formInput.type === 'select'">
           <SelectInput
-              :id="formKey"
-              v-model="form[formKey]"
-              :options="formInput?.options"
-              :label="t(formKey)"
-              :placeholder="formInput?.placeholder"
-              :errors="errors.fieldErrors?.[formKey]"
-              @input="onInput(formKey, false)"
+            :id="formKey"
+            v-model="form[formKey]"
+            :options="formInput?.options"
+            :label="getLabel({formInput, formKey})"
+            :placeholder="unref(formInput?.placeholder)"
+            :errors="errors.fieldErrors?.[formKey]"
+            @input="onInput(formKey, false)"
+          />
+        </template>
+
+        <template v-else-if="formInput.type === 'tel'">
+          <TextInput
+            :id="formKey"
+            v-model="form[formKey]"
+            :label="getLabel({formInput, formKey})"
+            :placeholder="unref(formInput?.placeholder)"
+            :errors="errors.fieldErrors?.[formKey]"
+            v-maskito="maskitoOptions"
+            @input="onInput(formKey)"
           />
         </template>
         <template v-else>
           <TextInput
-              :id="formKey"
-              v-model="form[formKey]"
-              :label="t(formKey)"
-              :placeholder="formInput?.placeholder"
-              :errors="errors.fieldErrors?.[formKey]"
-              @input="onInput(formKey)"
+            :id="formKey"
+            v-model="form[formKey]"
+            :label="getLabel({formInput, formKey})"
+            :placeholder="unref(formInput?.placeholder)"
+            :errors="errors.fieldErrors?.[formKey]"
+            @input="onInput(formKey)"
           />
-        </template>
+        </template> 
+      </template>  
+      
       </template>
       <div class="flex mb-6">
         <input
@@ -80,22 +98,42 @@ import TextInput from '@/components/ui/TextInput.vue'
 import SelectInput from '@/components/ui/SelectInput.vue'
 import GRecaptcha from '@/components/signup/GRecaptcha.vue'
 import { COUNTRIES } from '@/consts/countries'
-import { computed, reactive, ref, toRef, defineEmits, defineProps } from 'vue'
+import { computed, reactive, ref, toRef, defineEmits, defineProps, unref } from 'vue'
 import { z } from 'zod'
 import { useTranslations } from '@/i18n/utils'
 import type { Locales } from '@/i18n/ui'
 import {isSpanish} from '@/consts/isSpanish'
 import type {TFormatsInput} from '@/components/signup/type';
 
-type FormSchema = z.infer<typeof formSchema>
-type FlattenedErrors = z.inferFlattenedErrors<typeof formSchema>
+import {maskitoPhoneOptionsGenerator} from '@maskito/phone';
+import {maskito as vMaskito} from '@maskito/vue';
+import metadata from 'libphonenumber-js/mobile/metadata';
+ 
+const props = defineProps<{
+  lang: Locales
+}>()
 
 const emit = defineEmits<{
   (event: 'close'): void
 }>()
-const props = defineProps<{
-  lang: Locales
-}>()
+
+const maskitoOptions = maskitoPhoneOptionsGenerator({
+    metadata,
+    strict: false,
+    countryIsoCode: 'RU',
+});
+
+type FormSchema = z.infer<typeof formSchema>
+type FlattenedErrors = z.inferFlattenedErrors<typeof formSchema>
+const form = reactive<FormSchema>({
+  name: '',
+  email: '',
+  messenger: '',
+  userName: '',
+  countryOfResidence: '',
+  promoCode: ''
+});
+
 const lang = toRef(props, 'lang')
 const t = useTranslations(lang.value)
 
@@ -106,70 +144,109 @@ const onRecaptchaLoad = (id: number) => {
 }
 const isCaptchaInvalid = ref(false)
 
-const formSchema = z
-    .object({
-      name: z
-          .string()
-          // .nonempty({ message: t('errors.nonEmpty') })
-          .min(3, { message: t('errors.minChars') })
-          .max(30, { message: t('errors.maxChars') })
-          .regex(/^[\w\dА-Яа-я\s]+$/, { message: t('errors.nameValidChars') }),
-      email: z
-          .string()
-          // .nonempty({ message: t('errors.nonEmpty') })
-          .email({ message: t('errors.invalidEmail') }),
-      messenger: z.string().nonempty({ message: t('errors.nonEmpty') }),
-      userName: z
-          .string()
-          // .nonempty({ message: t('errors.nonEmpty') })
-          .min(3, { message: t('errors.minChars') })
-          .regex(/^[A-Za-z-_#$%^&@\.\d:]+$/, {
-            message: t('errors.userNameValidChars')
-          }),
-      countryOfResidence: z.string().nonempty({ message: t('errors.nonEmpty') }),
-      promoCode: z.string()
-    })
-    .strict()
-const form = reactive<FormSchema>({
-  name: '',
-  email: '',
-  messenger: '',
-  userName: '',
-  countryOfResidence: '',
-  promoCode: ''
+const Messenger = {
+  Facebook: "facebook",
+  WhatsApp: 'whatsapp'
+} 
+
+const userNameProps = computed(() => {
+  switch(form.messenger){
+    case Messenger.Facebook:
+      return {
+        regex: /(?:(?:http|https):\/\/)?(?:www.)?facebook.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[?\w\-]*\/)?(?:profile.php\?id=(?=\d.*))?([\w\-]*)?/,
+        placeholder:  "Profile link",
+        label: t('profileLink'),
+        type: 'text'
+      }
+    case Messenger.WhatsApp:
+      return {
+        placeholder: "+...",
+        label: t('phoneNumber'),
+        type: 'tel'
+      }
+    default: 
+      return {
+        regex:/^[A-Za-z-_#$%^&@\.\d:]+$/,
+        placeholder: "live: ... | @username" ,
+        label: t('userName'),
+        type: 'text'
+      } 
+  }
 })
 
-const formInputs: TFormatsInput = {
-  name: {
-    type: 'text',
-    placeholder: t('namePlaceholder')
-  },
-  email: {
-    type: 'text',
-    placeholder: 'example@mail.com'
-  },
-  messenger: {
-    type: 'select',
-    options: [
-      { value: 'telegram', text: 'Telegram' },
-      { value: 'skype', text: 'Skype' }
-    ],
-    placeholder: t('msgrPlaceholder')
-  },
-  userName: {
-    type: 'text',
-    placeholder: 'live: ... | @username'
-  },
-  countryOfResidence: {
-    type: 'select',
-    options: COUNTRIES.map((c) => ({ text: c, value: c })).sort(),
-    placeholder: t('countryPlaceholder')
-  },
-  promoCode: {
-    type: 'text',
-    placeholder: '--------'
+const userNameRule = computed(() => {
+  const rule  = z.string();
+
+  if(form.messenger === Messenger.WhatsApp){
+      return rule
+      //.min(9, {message: t('errors.minChars').replace('3', 9)})
+      //.max(15, {message: t('errors.maxChars').replace('30', 15)})
   }
-}
+
+  return rule
+    .regex(userNameProps.value.regex, {
+      message: t('errors.userNameValidChars')
+    })
+    .min(3, {message: t('errors.minChars')})      
+});
+
+const formSchema = computed(() => z
+  .object({ 
+    name: z
+      .string()
+    // .nonempty({ message: t('errors.nonEmpty') })
+      .min(3, {message: t('errors.minChars')})
+      .max(30, {message: t('errors.maxChars')})
+      .regex(/^[\w\dА-Яа-я\s]+$/, {message: t('errors.nameValidChars')}),
+    email: z
+      .string()
+    // .nonempty({ message: t('errors.nonEmpty') })
+      .email({message: t('errors.invalidEmail')}),
+    messenger: z.string().nonempty({message: t('errors.nonEmpty')}),
+    userName: userNameRule.value,
+    countryOfResidence: z.string().nonempty({message: t('errors.nonEmpty')}),
+    promoCode: z.string()
+  })
+  .strict()
+)
+ 
+const formInputs: TFormatsInput = computed(() => {
+  return {
+    name: {
+      type: 'text',
+      placeholder: t('namePlaceholder')
+    },
+    email: {
+      type: 'text',
+      placeholder: 'example@mail.com'
+    },
+    messenger: {
+      type: 'select',
+      options: [
+        {value: 'telegram', text: 'Telegram'},
+        {value: 'skype', text: 'Skype'},
+        {value: Messenger.WhatsApp, text: 'WhatsApp'},
+        {value: Messenger.Facebook, text: 'Facebook'},
+      ],
+      placeholder: t('msgrPlaceholder')
+    },
+    userName: {
+      type:  userNameProps.value.type,
+      placeholder: userNameProps.value.placeholder,
+      label: userNameProps.value.label,
+    },
+    countryOfResidence: {
+      type: 'select',
+      options: COUNTRIES.map((c) => ({text: c, value: c})).sort(),
+      placeholder: t('countryPlaceholder')
+    },
+    promoCode: {
+      type: 'text',
+      placeholder: '--------'
+    }
+  } 
+});
+
 const errors = ref<FlattenedErrors>({
   formErrors: [],
   fieldErrors: {}
@@ -279,7 +356,12 @@ const submitForm = async (e: Event) => {
       component: ModalSuccess,
       attrs: {
         isConfirmed: isConfirmed.value,
-        redirectHref: redirectHref.value
+        redirectHref: redirectHref.value,
+        lang,
+        closeSuccessModal :() => {
+          emit('close')
+          close()
+        } 
       }
     })
 
@@ -308,6 +390,10 @@ const submitForm = async (e: Event) => {
   } finally {
     formIsLoading.value = false
   }
+}
+
+const getLabel = ({formInput, formKey}:any) => {
+  return formInput.label ?? t(formKey)
 }
 </script>
 
